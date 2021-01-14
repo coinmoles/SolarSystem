@@ -20,12 +20,14 @@ class Planet:
             img (pg.Surface): 이미지
             loc_list (list): 이동할 좌표 리스트
         """
-        self.img, self.width, self.height, self.radius = img, None, None, None
+        self.img, self.width, self.height, self.radius = img, 5, 5, 5
 
         self.center = loc_list[0]
         self.loc = self.center - vec.Vector(self.width, self.height) // 2
 
         self.loc_list = loc_list
+
+        hlp.planet_list.append(self)
 
     def set_center(self, center):
         """center 설정
@@ -40,5 +42,5 @@ class Planet:
     def act(self):
         """한 프레임마다 하는 행동
         """
-        self.set_center(loc_list[hlp.t])
-        hlp.screen.blit(self.img, self.loc)
+        self.set_center(self.loc_list[hlp.t] * 200)
+        hlp.screen.blit(self.img, self.loc + vec.Vector(hlp.PADWIDTH, hlp.PADHEIGHT)/2)

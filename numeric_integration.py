@@ -1,71 +1,127 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import pandas as pd
-
-data = pd.read_excel('./SolarSystem.xlsx')
-G = 1  # TODO: 값 대입 (AU, day 단위로 맞추려면 어떻게 해야하지 아몰랑)
-n = len(data)
-planets = data['name']
-start_values = data[['x', 'y', 'vx', 'vy']]
-m_list = data['m']
+import vector as vec
+import helper as hlp
 
 
-def f(df_prev: pd.DataFrame, t):
-    df_new = pd.DataFrame(np.zeros((n, 4)), columns=df_prev.columns)
+def f_vel(df_prev: pd.DataFrame, t: float) -> pd.DataFrame:
+    return df_prev['vel']
 
-    for i in range(n):
-        df_new.loc[i, 'x'] = df_prev.loc[i, 'vx']
-        df_new.loc[i, 'y'] = df_prev.loc[i, 'vy']
-        for j in range(n):
+
+def f_acc(df_prev: pd.DataFrame, t: float) -> pd.DataFrame:
+    df_acc = pd.Series([vec.Vector(0, 0) for _ in range(hlp.n)])
+
+    for i in range(hlp.n):
+        for j in range(hlp.n):
             if i == j:
                 continue
-            r = ((df_prev.loc[i, 'x'] - df_prev.loc[j, 'x']) ** 2 + (df_prev.loc[i, 'y'] - df_prev.loc[j, 'y']) ** 2) ** 0.5
-            df_new.loc[i, 'vx'] += - G * m_list[j] / r ** 3 * (df_prev.loc[i, 'x'] - df_prev.loc[j, 'x'])
-            df_new.loc[i, 'vy'] += - G * m_list[j] / r ** 3 * (df_prev.loc[i, 'y'] - df_prev.loc[j, 'y'])
+            r = abs(df_prev.loc[i, 'loc'] - df_prev.loc[j, 'loc'])
+            df_acc[i] += (df_prev.loc[i, 'loc'] - df_prev.loc[j, 'loc']) * (-hlp.G * hlp.m_list[j] / r ** 3)
 
-    return df_new
+    return df_acc
 
 
 def forward_euler(t0, tf, dt):
     t_num = int((tf - t0) / dt)
-    t_list = [None for _ in range(t_num)]
-    data_list = [None for _ in range(t_num)]
+    hlp.t_num = t_num
+    t_list: list[float] = [0 for _ in range(t_num)]
+    data_list: list[pd.DataFrame] = [None for _ in range(t_num)]
 
     t_list[0] = t0
-    data_list[0] = start_values
+    data_list[0] = hlp.start_values
 
     for i in range(1, t_num):
         t_list[i] = t_list[i-1] + dt
-        data_list[i] = data_list[i-1] + dt * f(data_list[i-1], t_list[i-1])
-        # print(t_list[i], data_list[i])
+        k0 = pd.DataFrame(
+            {'loc': f_vel(data_list[i-1], t_list[i-1]) * dt,
+             'vel': f_acc(data_list[i-1], t_list[i-1]) * dt}
+        )
+        data_list[i] = data_list[i-1] + k0
 
     return t_list, data_list
 
 
 def rk4(t0, tf, dt):
     t_num = int((tf - t0) / dt)
-    t_list = [None for _ in range(t_num)]
-    data_list = [None for _ in range(t_num)]
+    hlp.t_num = t_num
+    t_list: list[float] = [0 for _ in range(t_num)]
+    data_list: list[pd.DataFrame] = [None for _ in range(t_num)]
 
     t_list[0] = t0
-    data_list[0] = start_values
+    data_list[0] = hlp.start_values
 
     for i in range(1, t_num):
-        t_list[i] = t_list[i - 1] + dt
+        t_list[i] = t_list[i-1] + dt
 
-        k1 = dt * f(data_list[i - 1], t_list[i - 1])
-        k2 = dt * f(data_list[i - 1] + k1 / 2, t_list[i - 1] + dt / 2)
-        k3 = dt * f(data_list[i - 1] + k2 / 2, t_list[i - 1] + dt / 2)
-        k4 = dt * f(data_list[i - 1] + k3, t_list[i - 1] + dt)
-        data_list[i] = data_list[i - 1] + (k1 + 2 * k2 + 2 * k3 + k4) / 6
+        k1 = pd.DataFrame(
+            {'loc': f_vel(data_list[i-1], t_list[i-1]) * dt,
+             'vel': f_acc(data_list[i-1], t_list[i-1]) * dt}
+        )
+        k2 = pd.DataFrame(
+            {'loc': f_vel(data_list[i-1] + k1/2, t_list[i-1] + dt/2) * dt,
+             'vel': f_acc(data_list[i-1] + k1/2, t_list[i-1] + dt/2) * dt}
+        )
+        k3 = pd.DataFrame(
+            {'loc': f_vel(data_list[i-1], t_list[i-1] + dt/2) * dt,
+             'vel': f_acc(data_list[i-1], t_list[i-1] + dt/2) * dt}
+        )
+        k4 = pd.DataFrame(
+            {'loc': f_vel(data_list[i-1], t_list[i-1] + dt) * dt,
+             'vel': f_acc(data_list[i-1], t_list[i-1] + dt) * dt}
+        )
+        data_list[i] = data_list[i-1] + (k1 + k2*2 + k3*2 + k4) / 6
 
     return t_list, data_list
 
 
-def to_list(td_data, p_num, key):
-    output = []
+def verlet(t0, tf, dt):
+    t_num = int((tf - t0) / dt)
+    hlp.t_num = t_num
+    t_list: list[float] = [0 for _ in range(t_num)]
+    data_list: list[pd.DataFrame] = [None for _ in range(t_num)]
 
-    for td in td_data:
-        output.append(td.loc[p_num, key])
+    t_list[0] = t0
+    data_list[0] = hlp.start_values
 
-    return output
+    for i in range(1, t_num):
+        t_list[i] = t_list[i-1] + dt
+        k0 = pd.DataFrame(
+            {'loc': f_vel(data_list[i-1], t_list[i-1]) * dt + f_acc(data_list[i-1], t_list[i-1]) * 1/2 * dt**2,
+             'vel': f_acc(data_list[i-1], t_list[i-1]) * 1/2 *dt}
+        )
+        k1 = pd.DataFrame(
+            {'loc': [vec.Vector(0, 0) for _ in range(n)],
+             'vel': f_acc(data_list[i-1] + k0, t_list[i-1]) * 1/2 * dt}
+        )
+        data_list[i] = data_list[i-1] + (k0 + k1) / 2
+
+    return t_list, data_list
+
+
+def leapfrog(t0, tf, dt):
+    t_num = int((tf - t0) / dt)
+    hlp.t_num = t_num
+    t_list: list[float] = [0 for _ in range(t_num)]
+    data_list: list[pd.DataFrame] = [None for _ in range(t_num)]
+
+    t_list[0] = t0
+    data_list[0] = hlp.start_values
+
+    for i in range(1, t_num):
+        t_list[i] = t_list[i - 1] + dt
+        k0 = pd.DataFrame(
+            {'loc': [vec.Vector(0, 0) for _ in range(n)],
+             'vel': f_acc(data_list[i-1], t_list[i-1]) * dt}
+        )
+        data_list[i] = data_list[i-1] + k0
+        k1 = pd.DataFrame(
+            {'loc': f_vel(data_list[i], t_list[i-1]) * dt,
+             'vel': [vec.Vector(0, 0) for _ in range(n)]}
+        )
+        data_list[i] += k1
+
+    return t_list, data_list
+
+
+def to_loc_list(td_data, p_num):
+    return list(map(lambda td: td.loc[p_num, 'loc'], td_data))

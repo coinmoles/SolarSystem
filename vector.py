@@ -7,6 +7,9 @@ class Vector(list):  # 벡터 클래스
     def __init__(self, *arg):
         super().__init__([*arg])
 
+    def __str__(self):
+        return '[{:.3f}, {:.3f}]'.format(*self)
+
     def __add__(self, rhs: Vector) -> Vector:
         if not isinstance(rhs, Vector):
             raise TypeError
