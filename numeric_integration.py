@@ -12,9 +12,14 @@ def f_acc(df_prev: pd.DataFrame, t: float) -> pd.DataFrame:
     df_acc = pd.Series([vec.Vector(0, 0) for _ in range(hlp.n)])
 
     for i in range(hlp.n):
-        for j in range(hlp.n):
-            if i == j:
-                continue
+        if i == 0:
+            for j in range(hlp.n):
+                if i == j:
+                    continue
+                r = abs(df_prev.loc[i, 'loc'] - df_prev.loc[j, 'loc'])
+                df_acc[i] += (df_prev.loc[i, 'loc'] - df_prev.loc[j, 'loc']) * (-hlp.G * hlp.m_list[j] / r ** 3)
+        else:
+            j = 0
             r = abs(df_prev.loc[i, 'loc'] - df_prev.loc[j, 'loc'])
             df_acc[i] += (df_prev.loc[i, 'loc'] - df_prev.loc[j, 'loc']) * (-hlp.G * hlp.m_list[j] / r ** 3)
 
@@ -90,7 +95,7 @@ def verlet(t0, tf, dt):
              'vel': f_acc(data_list[i-1], t_list[i-1]) * 1/2 *dt}
         )
         k1 = pd.DataFrame(
-            {'loc': [vec.Vector(0, 0) for _ in range(n)],
+            {'loc': [vec.Vector(0, 0) for _ in range(hlp.n)],
              'vel': f_acc(data_list[i-1] + k0, t_list[i-1]) * 1/2 * dt}
         )
         data_list[i] = data_list[i-1] + (k0 + k1) / 2
@@ -110,13 +115,13 @@ def leapfrog(t0, tf, dt):
     for i in range(1, t_num):
         t_list[i] = t_list[i - 1] + dt
         k0 = pd.DataFrame(
-            {'loc': [vec.Vector(0, 0) for _ in range(n)],
+            {'loc': [vec.Vector(0, 0) for _ in range(hlp.n)],
              'vel': f_acc(data_list[i-1], t_list[i-1]) * dt}
         )
         data_list[i] = data_list[i-1] + k0
         k1 = pd.DataFrame(
             {'loc': f_vel(data_list[i], t_list[i-1]) * dt,
-             'vel': [vec.Vector(0, 0) for _ in range(n)]}
+             'vel': [vec.Vector(0, 0) for _ in range(hlp.n)]}
         )
         data_list[i] += k1
 

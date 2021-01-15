@@ -4,8 +4,8 @@ import helper as hlp
 
 
 def to_theta_r_list(td_data, p_num):
-    theta_list = list(map(lambda td: math.atan2(*td.loc[p_num, 'loc']), td_data))
-    r_list = list(map(lambda td: abs(td.loc[p_num, 'loc']), td_data))
+    theta_list = list(map(lambda td: math.atan2(*(td.loc[p_num, 'loc'] - td.loc[0, 'loc'])), td_data))
+    r_list = list(map(lambda td: abs(td.loc[p_num, 'loc'] - td.loc[0, 'loc']), td_data))
     return theta_list, r_list
 
 

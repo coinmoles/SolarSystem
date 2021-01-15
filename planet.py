@@ -43,4 +43,4 @@ class Planet:
         """한 프레임마다 하는 행동
         """
         self.set_center(self.loc_list[hlp.t] * 200)
-        hlp.screen.blit(self.img, self.loc + vec.Vector(hlp.PADWIDTH, hlp.PADHEIGHT)/2)
+        hlp.screen.blit(self.img, self.loc + vec.Vector(800, hlp.PADHEIGHT)/2)
