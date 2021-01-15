@@ -7,8 +7,47 @@ import game_loop
 import conservation_checker as cc
 import theta_manager as tm
 
-hlp.t_list, data_list = ni.rk4(0, 800, 1e-2)
+hlp.t_list, data_list = ni.rk4(0, 800, 1, False)
 
+'''
+theta_list, r_list = tm.to_theta_r_list(data_list, 1)
+theta_list_true, r_list_true = tm.to_theta_r_list(data_list_true, 1)
+
+plt.figure(1)
+plt.plot(hlp.t_list, tm.get_percent_differece(r_list, r_list_true), label='% error of r(t) of Earth')
+plt.title('% Error')
+plt.xlabel('time [day]')
+plt.ylabel('error [%]')
+plt.legend()
+plt.show()
+
+plt.figure(2)
+plt.plot(hlp.t_list, tm.get_percent_differece(theta_list, theta_list_true), label='% error of theta(t) of Earth')
+plt.title('% Error')
+plt.xlabel('time [day]')
+plt.ylabel('error [%]')
+plt.legend()
+plt.show()
+
+theta_list, r_list = tm.to_theta_r_list(data_list, 2)
+theta_list_true, r_list_true = tm.to_theta_r_list(data_list_true, 2)
+
+plt.figure(3)
+plt.plot(hlp.t_list, tm.get_percent_differece(r_list, r_list_true), label='% error of r(t) of Mars')
+plt.title('% Error')
+plt.xlabel('time [day]')
+plt.ylabel('error [%]')
+plt.legend()
+plt.show()
+
+plt.figure(4)
+plt.plot(hlp.t_list, tm.get_percent_differece(theta_list, theta_list_true), label='% error of theta(t) of Mars')
+plt.title('% Error')
+plt.xlabel('time [day]')
+plt.ylabel('error [%]')
+plt.legend()
+plt.show()
+'''
 '''
 plt.figure(1)
 energy_list = cc.to_energy_list(data_list)
@@ -57,7 +96,17 @@ print('In Percentage', abs((max(angular_momentum_list) - min(angular_momentum_li
 pg.init()
 pg.display.set_caption('SolarSystem')
 hlp.init()
-planet.Planet(hlp.circle_surface(50, hlp.RED), ni.to_loc_list(data_list, 0))
-planet.Planet(hlp.circle_surface(20, hlp.BLUE), ni.to_loc_list(data_list, 1))
-planet.Planet(hlp.circle_surface(20, hlp.MARS), ni.to_loc_list(data_list, 2))
+planet.Planet(hlp.circle_surface(30, hlp.RED), ni.to_loc_list(data_list, 0))
+planet.Planet(hlp.circle_surface(10, (52, 66, 119)), ni.to_loc_list(data_list, 1))
+planet.Planet(hlp.circle_surface(10, (226, 123, 88)), ni.to_loc_list(data_list, 2))
+planet.Planet(hlp.circle_surface(8, (213, 210, 209)), ni.to_loc_list(data_list, 3))
+planet.Planet(hlp.circle_surface(8, (139, 125, 130)), ni.to_loc_list(data_list, 4))
+planet.Planet(hlp.circle_surface(10, (200, 139, 58)), ni.to_loc_list(data_list, 5))
+planet.Planet(hlp.circle_surface(10, (164, 155, 114)), ni.to_loc_list(data_list, 6))
+planet.Planet(hlp.circle_surface(8, (79, 208, 231)), ni.to_loc_list(data_list, 7))
+planet.Planet(hlp.circle_surface(8, (37, 128, 159)), ni.to_loc_list(data_list, 8))
+planet.Planet(hlp.circle_surface(3, (0, 0, 0)), ni.to_loc_list(data_list, 9))
+planet.Planet(hlp.circle_surface(2, (100, 100, 100)), ni.to_loc_list(data_list, 10))
+planet.Planet(hlp.circle_surface(2, (0, 0, 0)), ni.to_loc_list(data_list, 11))
+
 game_loop.game_loop()

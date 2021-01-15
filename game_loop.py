@@ -30,5 +30,5 @@ def game_loop():
 
         pg.display.update()
 
-        hlp.t += 10
+        hlp.t += 1
         hlp.clock.tick(30)

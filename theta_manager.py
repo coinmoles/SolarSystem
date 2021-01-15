@@ -13,7 +13,13 @@ def get_t(theta_list):
     theta_0 = theta_list[0]
 
     i = 40
-    while abs(theta_list[i] - theta_0) > 0.0005:
+    while abs(theta_list[i] - theta_0) > 0.005:
         i += 1
 
     return hlp.t_list[i]
+
+
+def get_percent_differece(ref_data_list, data_list):
+    print(ref_data_list)
+    print(data_list)
+    return list(map(lambda k: abs((k[0]-k[1])/k[0]) * 100, zip(ref_data_list, data_list)))
